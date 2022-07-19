@@ -1,0 +1,93 @@
+import argparse
+import sys
+import os
+
+import numpy as np
+
+from pathlib import Path
+
+from yacos.essential import Engine
+from yacos.essential import IO
+from yacos.essential import Sequence
+
+from yacos.info.ncc import Inst2Vec
+from yacos.info import compy
+from yacos.info.compy.extractors import LLVMDriver
+
+from extractors import *
+
+def extract_representations_sequences(bench_dir, sequence_dict, representation):
+    """
+    extract the representation of one benchmark with a collection of sequences
+    bench_dir: str
+        directory of one benchmark ready to compile with Yacos (with makefile and configure.sh)
+    sequence_dict: dict
+        a dictionary where the keys are the sequence name and the values are
+        a list with compiler passes
+    representation: str
+        a string with the representation that will be extracted
+        valid values:
+            ir2vec
+            histogram
+            inst2vec
+    """
+    extractor = None
+    if representation == 'ir2vec':
+        extractor = IR2vecExtractor
+    elif representation == 'histogram':
+        extractor = HistogramExtractor
+    elif representation == 'inst2vec':
+        extractor = Inst2Vec
+
+    representations={}
+    for s_name in sequence_dict:
+        sequence_str = Sequence.name_pass_to_string(sequence_dict[s_name])
+        print(sequence_str)
+        representations[s_name] = extractor.extract_representation(bench_dir,
+                                    sequence_str)
+    return representations
+
+def run(args):
+    bench_dir = args.program_dir
+    sequence_file=args.sequences_file
+    representation=args.representation
+    output_dir=args.output_dir
+
+    sequence_dict = IO.load_yaml_or_fail(sequence_file)
+    representations={}
+
+    print('extrcting representations')
+
+    representations=extract_representations_sequences(bench_dir,
+                                                      sequence_dict,
+                                                      representation)
+
+    os.makedirs(output_dir,exist_ok=True)
+
+    print(f'saving files into:{output_dir}')
+    for s_name in representations:
+        outfile=str(s_name)+'_'+Path(bench_dir).stem
+        outfile=os.path.join(output_dir,outfile)
+        np.savez_compressed(outfile,
+                            values=representations[s_name])
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser('Feature extractor',
+                                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('program_dir',
+                        help='directory of the program source, compile.sh and makefile.opt (compatible with yacos)')
+    parser.add_argument('--sequeces-file', '-s', 
+                        dest='sequences_file',
+                        default='config_files/sequences.yaml',
+                        help='yaml file containing a dictionary of sequences (each sequence is a list of optimizations)')
+    parser.add_argument('--representation', '-r', dest='representation',
+                        choices=['ir2vec','inst2vec','histogram'],
+                        default='ir2vec',
+                        help='representation to be extracted')
+    parser.add_argument('--output-dir','-o', dest='output_dir',
+                        default='representations',
+                        help='output directory of repersentation files')
+    args=parser.parse_args()
+
+    run(args)
+

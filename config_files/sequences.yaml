@@ -1,0 +1,15 @@
+S1:
+- -inline
+- -gvn
+- -dse
+S2:
+- -dse
+- -sroa
+- -loop-unroll
+- -mem2reg
+S3:
+- -loop-rotate
+- -early-cse
+- -dce
+S4:
+- -O3
