@@ -146,6 +146,12 @@ class ExecutionGoalExtractor:
     @classmethod
     def set_number_runs(cls, 
                         num):
+        """Set the number of runs used to extract the goal (default: 1)
+        Parameters
+        num: int
+            Number of executions for extract the goal
+        """
+
         if num < 1 or int(num) != num:
             raise Exception("The number of executions must be an integer greater or equal 1")
         cls._number_runs = num
@@ -154,6 +160,13 @@ class ExecutionGoalExtractor:
     def set_goal(cls,
                  goal_list,
                  weight_list):
+        """Set the goal list and weight for each goal
+        Parameters:
+            goal_list: list
+                each element is a name of one goal (string)
+            weight_list: list
+                each element is the wieght for the goal at the same position of goal_list 
+        """
         if len(goal_list) != len(weight_list):
             raise Exception("Goal list and weight list must have the same length")
         cls._goal_list = goal_list
@@ -166,25 +179,28 @@ class ExecutionGoalExtractor:
                  working_set=0):
         goal = Goal.prepare_goal(cls._goal_list,cls._weight_list)
         goal_seq = Engine.evaluate(goals=goal,
-                                   sequence=sequence_str,
-                                   compiler='opt',
-                                   benchmark_directory=bench_dir,
-                                   working_set=working_set)
+                                    sequence=sequence_str,
+                                    compiler='opt',
+                                    benchmark_directory=bench_dir,
+                                    times=cls._number_runs,
+                                    working_set=working_set)
         return goal_seq
+        
 
 class SpeedupExtractor(ExecutionGoalExtractor):
+    """Class to extract speedup from benchmarks"""
     _baseline = '-O0'
-    _number_runs = 1
     @classmethod 
     def set_baseline(cls,
                      baseline):
+        """set the baseline used to calculate speedup (default O0)"""
         cls._baseline=baseline
+
     @classmethod
-    def set_number_runs(cls,
-                        num):
-        if num < 1 or int(num) != num:
-            raise Exception("The number of executions must be an integer greater or equal 1")
-        cls._number_runs = num
+    def set_goal(cls,
+                 goal_list,
+                 weight_list):
+        raise Exception("You can't change the goal for speedup. It must be ruuntime")
 
     @classmethod
     def get_sepeedup(cls, 
@@ -192,9 +208,10 @@ class SpeedupExtractor(ExecutionGoalExtractor):
                      sequence_str,
                      working_set=0):
         """
-        Compile and execut the program with sequence argument and the baseline level O0
-        (you can change the beseline method set_baseline)
-        Calculates the speedup of sequence and baseline
+        Compile and execute the program with sequence argument and the baseline level O0
+        (you can change the beseline method set_baseline).
+        Calculates the speedup of sequence and baseline.
+        You can define the number of runs with method set_number_runs 
         bench_dir: str
             directory of one benchmark ready to compile and run with Yacos 
             (with makefile.opt, configure.sh and execute.sh)
@@ -202,7 +219,6 @@ class SpeedupExtractor(ExecutionGoalExtractor):
             The optimization sequence string
         working_set: str
         """
-        
         goal_baseline = cls.get_execution_goal(bench_dir=bench_dir,
                                                sequence_str=cls._baseline,
                                                working_set=working_set)
@@ -212,15 +228,3 @@ class SpeedupExtractor(ExecutionGoalExtractor):
                                           working_set=working_set)
         
         return goal_baseline/goal_seq
-        '''goal = Goal.prepare_goal(['runtime'],[1])
-        goal_baseline = Engine.evaluate(goals=goal,
-                                        sequence=cls._baseline,
-                                        compiler='opt',
-                                        benchmark_directory=bench_dir,
-                                        working_set=working_set)
-        goal_seq = Engine.evaluate(goals=goal,
-                                   sequence=sequence_str,
-                                   compiler='opt',
-                                   benchmark_directory=bench_dir,
-                                   working_set=working_set)
-        return goal_baseline/goal_seq'''

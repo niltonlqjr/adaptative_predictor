@@ -9,8 +9,11 @@ from extractors import SpeedupExtractor
 from yacos.essential import Sequence
 from yacos.essential import IO
 
-def extract_speedup(benchmark_dir, sequence_dict):
+def extract_speedup(benchmark_dir,
+                    sequence_dict,
+                    runs):
     speedups={}
+    SpeedupExtractor.set_number_runs(runs)
     for s_name in sequence_dict:
         sequence_str = Sequence.name_pass_to_string(sequence_dict[s_name])
         print(sequence_str)
@@ -22,10 +25,11 @@ def run(args):
     bench_dir = args.program_dir
     sequences_file = args.sequences_file
     output_dir = args.output_dir
+    runs = args.runs
 
     sequence_dict = IO.load_yaml_or_fail(sequences_file)
 
-    speedups = extract_speedup(bench_dir,sequence_dict)
+    speedups = extract_speedup(bench_dir,sequence_dict, runs)
     
     os.makedirs(output_dir,exist_ok=True)
     print(f'saving files into:{output_dir}')
@@ -45,6 +49,10 @@ if __name__ == '__main__':
                         dest='sequences_file',
                         default='config_files/sequences.yaml',
                         help='yaml file containing a dictionary of sequences (each sequence is a list of optimizations)')
+    parser.add_argument('--runs', '-r',
+                        dest='runs',
+                        type=int,
+                        default=1)
     parser.add_argument('--output-dir','-o', dest='output_dir',
                         default='representations',
                         help='output directory of repersentation files')
