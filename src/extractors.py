@@ -139,14 +139,49 @@ class Inst2vecExtractor:
         print('Not implemented yet',file=sys.stderr)
         exit(0)
 
-class SpeedupExtractor:
+class ExecutionGoalExtractor:
+    _number_runs = 1
+    _goal_list = ['runtime']
+    _weight_list = ['1']
+    @classmethod
+    def set_number_runs(cls, 
+                        num):
+        if num < 1 or int(num) != num:
+            raise Exception("The number of executions must be an integer greater or equal 1")
+        cls._number_runs = num
+
+    @classmethod
+    def set_goal(cls,
+                 goal_list,
+                 weight_list):
+        if len(goal_list) != len(weight_list):
+            raise Exception("Goal list and weight list must have the same length")
+        cls._goal_list = goal_list
+        cls._weight_list = weight_list
+    
+    @classmethod
+    def get_execution_goal(cls,
+                 bench_dir,
+                 sequence_str,
+                 working_set=0):
+        goal = Goal.prepare_goal(cls._goal_list,cls._weight_list)
+        goal_seq = Engine.evaluate(goals=goal,
+                                   sequence=sequence_str,
+                                   compiler='opt',
+                                   benchmark_directory=bench_dir,
+                                   working_set=working_set)
+        return goal_seq
+
+class SpeedupExtractor(ExecutionGoalExtractor):
     _baseline = '-O0'
     _number_runs = 1
     @classmethod 
-    def set_baseline(cls, baseline):
+    def set_baseline(cls,
+                     baseline):
         cls._baseline=baseline
     @classmethod
-    def set_exec_number(cls, num):
+    def set_number_runs(cls,
+                        num):
         if num < 1 or int(num) != num:
             raise Exception("The number of executions must be an integer greater or equal 1")
         cls._number_runs = num
@@ -167,19 +202,25 @@ class SpeedupExtractor:
             The optimization sequence string
         working_set: str
         """
-        goal = Goal.prepare_goal(['runtime'],[1])
-        #Engine.compile(benchmark_directory=bench_dir,
-        #               sequence=cls._baseline,
-        #               compiler='opt')
-        #g_b = Engine.only_evaluate(goals=goal,
-        #                           benchmark_directory=bench_dir,
-        #                           working_set=working_set)
+        
+        goal_baseline = cls.get_execution_goal(bench_dir=bench_dir,
+                                               sequence_str=cls._baseline,
+                                               working_set=working_set)
+        
+        goal_seq = cls.get_execution_goal(bench_dir=bench_dir,
+                                          sequence_str=sequence_str,
+                                          working_set=working_set)
+        
+        return goal_baseline/goal_seq
+        '''goal = Goal.prepare_goal(['runtime'],[1])
         goal_baseline = Engine.evaluate(goals=goal,
                                         sequence=cls._baseline,
                                         compiler='opt',
-                                        benchmark_directory=bench_dir)
+                                        benchmark_directory=bench_dir,
+                                        working_set=working_set)
         goal_seq = Engine.evaluate(goals=goal,
                                    sequence=sequence_str,
                                    compiler='opt',
-                                   benchmark_directory=bench_dir)
-        return goal_baseline/goal_seq
+                                   benchmark_directory=bench_dir,
+                                   working_set=working_set)
+        return goal_baseline/goal_seq'''
