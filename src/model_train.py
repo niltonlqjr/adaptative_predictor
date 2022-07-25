@@ -1,11 +1,36 @@
-import argparse
-#import tensorflow as tf
 import os
-import glob
-import numpy as np
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
+import glob
+import argparse
+
+import numpy as np
+import tensorflow as tf
+
+from sklearn.preprocessing import MinMaxScaler
+
+from tensorflow.keras import Model
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Conv1D, MaxPool1D, Dropout, Flatten
+from tensorflow.keras.layers import Bidirectional, Input, MaxPooling1D, LSTM, concatenate
+from tensorflow.keras.callbacks import EarlyStopping
 
 from pathlib import Path
+
+def build_model_dense(input_shape):
+    model = Sequential([
+        Dense(64, activation="relu", input_shape=[input_shape]),
+        Dense(32, activation="relu"),
+        Dense(1)
+    ])
+
+    optimizer = tf.keras.optimizers.RMSprop(0.001)
+
+    model.compile(loss="mse",
+                  optimizer=optimizer,
+                  metrics=["mae", "mse"])
+
+    return model
 
 def read_dataset(representation_dir,
                  values_dir,
@@ -38,14 +63,36 @@ def run(args):
                            representation_ext,
                            values_ext)
     
-    for e in dataset:
-        print(e)
-        print(dataset[e]['repr'][::60], '->', dataset[e]['value'])
-        print('======')
-
     if validation_samples != None:
-        print("validation not implemented yet")
+        raise Exception("Validation support not implemented yet")
+
+    x=[]
+    y=[]
+    for e in dataset:
+        #print(e)
+        #print(dataset[e]['repr'][::60], '->', dataset[e]['value'])
+        #print('======')
+        x.append(dataset[e]['repr'])
+        y.append(dataset[e]['value'])
     
+    for i in range(len(x)):
+        print(x[i][::60],'--',y[i])
+    
+    x = np.array(x)
+    y = np.array(y)
+
+    scalerX = MinMaxScaler()
+    scalerX.fit(x)
+    x = scalerX.transform(x)
+
+    model = build_model_dense(x.shape[1])
+
+    model.fit(x,y)
+
+    p = model.predict(x)
+
+    for i in range(len(p)):
+        print('predicted:',p[i],'-> real:',y[i])
 
 
 if __name__ == '__main__':
