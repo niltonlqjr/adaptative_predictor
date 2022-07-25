@@ -174,9 +174,18 @@ class ExecutionGoalExtractor:
     
     @classmethod
     def get_execution_goal(cls,
-                 bench_dir,
-                 sequence_str,
-                 working_set=0):
+                           bench_dir,
+                           sequence_str,
+                           working_set=0):
+        """
+        Method to extract goals that need to be executed
+        bench_dir: str
+            Benchmark directory (must contain all compile.sh and execute.sh)
+        sequence_str: str
+            string of optimization sequence
+        working_set:
+            benchmark work set (input to be executed)
+        """
         goal = Goal.prepare_goal(cls._goal_list,cls._weight_list)
         goal_seq = Engine.evaluate(goals=goal,
                                     sequence=sequence_str,
@@ -200,7 +209,7 @@ class SpeedupExtractor(ExecutionGoalExtractor):
     def set_goal(cls,
                  goal_list,
                  weight_list):
-        raise Exception("You can't change the goal for speedup. It must be ruuntime")
+        raise Exception("You can't change the goal for speedup. It must be runtime")
 
     @classmethod
     def get_sepeedup(cls, 
