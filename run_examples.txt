@@ -1,3 +1,0 @@
-python3 src/speedup_collector.py benchmakrs_test/automotive-basicmath-small/ -s config_files/sequences.yaml -o speedups/
-python3 src/feature_extractor.py -r histogram /home/nilton/adaptative_predictor/benchmakrs_test/automotive-basicmath-small/ -o hist
-python3 src/feature_extractor.py -r ir2vec /home/nilton/adaptative_predictor/benchmakrs_test/automotive-basicmath-small/ -o ir2vec
