@@ -57,6 +57,7 @@ def run(args):
     validation_samples = args.validation_samples
     representation_ext = args.representation_ext
     values_ext = args.values_ext
+    epochs = args.epochs
 
     dataset = read_dataset(representation_dir,
                            values_dir,
@@ -87,7 +88,7 @@ def run(args):
 
     model = build_model_dense(x.shape[1])
 
-    model.fit(x,y)
+    model.fit(x,y,epochs=epochs)
 
     p = model.predict(x)
 
@@ -118,6 +119,11 @@ if __name__ == '__main__':
                         dest='values_ext',
                         default='npz',
                         help='extension of values files')
+    parser.add_argument('--epochs','-e',
+                        type=int,
+                        dest='epochs',
+                        default=10,
+                        help='eppchs of NN training')
 
     args=parser.parse_args()
     
