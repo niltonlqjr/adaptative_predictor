@@ -7,6 +7,7 @@ import argparse
 import numpy as np
 import tensorflow as tf
 
+from yacos.essential import IO
 from sklearn.preprocessing import MinMaxScaler
 
 from tensorflow.keras import Model
@@ -58,6 +59,8 @@ def run(args):
     representation_ext = args.representation_ext
     values_ext = args.values_ext
     epochs = args.epochs
+    output = args.output
+    predict_train = args.predict_train
 
     dataset = read_dataset(representation_dir,
                            values_dir,
@@ -90,14 +93,22 @@ def run(args):
 
     model.fit(x,y,epochs=epochs)
 
-    p = model.predict(x)
+    output_path,filename = os.path.split(output)
 
-    for i in range(len(p)):
-        print('predicted:',p[i],'-> real:',y[i])
+    os.makedirs(output_path,exist_ok=True)
+
+    IO.dump_pickle(model,output)
+
+    if predict_train:
+        p = model.predict(x)
+
+        for i in range(len(p)):
+            print('predicted:',p[i],'-> real:',y[i])
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('Model trainer')
+    parser = argparse.ArgumentParser('Model trainer',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('representation_dir',
                         help='directory containing dataset sequences')
     parser.add_argument('values_dir',
@@ -106,6 +117,10 @@ if __name__ == '__main__':
                         default='ir2vec',
                         dest='representation_type',
                         help='type of representation')
+    parser.add_argument('--output', '-o',
+                        default='model.pck',
+                        dest='output',
+                        help='filename to store the NN model (pickle format)')
     parser.add_argument('--validation-sample', '-v',
                         default=None,
                         type=str,
@@ -124,6 +139,10 @@ if __name__ == '__main__':
                         dest='epochs',
                         default=10,
                         help='eppchs of NN training')
+    parser.add_argument('--predict-train',
+                        dest='predict_train',
+                        action='store_true',
+                        help='Use this flag to predict the train dataset and print real vs predicted in stdout')
 
     args=parser.parse_args()
     
