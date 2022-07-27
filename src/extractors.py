@@ -165,7 +165,7 @@ class ExecutionGoalExtractor:
             goal_list: list
                 each element is a name of one goal (string)
             weight_list: list
-                each element is the wieght for the goal at the same position of goal_list 
+                each element is the wieght (string) for the goal at the same position of goal_list 
         """
         if len(goal_list) != len(weight_list):
             raise Exception("Goal list and weight list must have the same length")
