@@ -42,14 +42,18 @@ def read_dataset(representation_dir,
     files=glob.glob(os.path.join(representation_dir,'*.'+representation_ext))
 
     for filename in files:
-        pf = Path(filename)
-        file_no_ext = pf.stem
-        ret[file_no_ext]={}
-        ret[file_no_ext]['repr'] = np.load(filename)['values']
-        value_filename = os.path.join(values_dir,file_no_ext+'.'+values_ext)
-        ret[file_no_ext]['value'] = np.load(value_filename)['values']
-
+        print(filename)
+        bench_name = Path(filename).stem
+        x_data = IO.load_yaml_or_fail(filename)
+        value_filename = os.path.join(values_dir,bench_name+'.'+values_ext)
+        y_data = IO.load_yaml_or_fail(value_filename)
+        for seq in x_data:
+            key=bench_name+'_'+str(seq)
+            ret[key] = {}
+            ret[key]['x'] = x_data[seq]
+            ret[key]['y'] = y_data[seq]
     return ret
+
 
 def run(args):
     representation_dir = args.representation_dir
@@ -73,15 +77,9 @@ def run(args):
     x=[]
     y=[]
     for e in dataset:
-        #print(e)
-        #print(dataset[e]['repr'][::60], '->', dataset[e]['value'])
-        #print('======')
-        x.append(dataset[e]['repr'])
-        y.append(dataset[e]['value'])
-    
-    for i in range(len(x)):
-        print(x[i][::60],'--',y[i])
-    
+        x.append(dataset[e]['x'])
+        y.append(dataset[e]['y'])
+      
     x = np.array(x)
     y = np.array(y)
 
@@ -94,8 +92,8 @@ def run(args):
     model.fit(x,y,epochs=epochs)
 
     output_path,filename = os.path.split(output)
-
-    os.makedirs(output_path,exist_ok=True)
+    if output_path != '':
+        os.makedirs(output_path,exist_ok=True)
 
     IO.dump_pickle(model,output)
 
@@ -128,11 +126,11 @@ if __name__ == '__main__':
                         help='list of validation samples')
     parser.add_argument('--representation-ext',
                         dest='representation_ext',
-                        default='npz',
+                        default='yaml',
                         help='extension of representation files')
     parser.add_argument('--values-ext',
                         dest='values_ext',
-                        default='npz',
+                        default='yaml',
                         help='extension of values files')
     parser.add_argument('--epochs','-e',
                         type=int,

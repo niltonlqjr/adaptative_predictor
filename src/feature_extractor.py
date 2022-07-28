@@ -5,6 +5,7 @@ import os
 import numpy as np
 
 from pathlib import Path
+from pkg_resources import working_set
 
 from yacos.essential import Engine
 from yacos.essential import IO
@@ -65,11 +66,14 @@ def run(args):
     os.makedirs(output_dir,exist_ok=True)
 
     print(f'saving files into:{output_dir}')
-    for s_name in representations:
+    '''for s_name in representations:
         outfile=str(s_name)+'_'+Path(bench_dir).stem
-        outfile=os.path.join(output_dir,outfile)
-        np.savez_compressed(outfile,
-                            values=representations[s_name])
+        outfile=os.path.join(output_dir,outfile)'''
+    bench_name=Path(bench_dir).stem
+    outfile=os.path.join(output_dir,bench_name)
+    outfile+='.yaml'
+    IO.dump_yaml(data=representations,
+                 filename=outfile)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Feature extractor',

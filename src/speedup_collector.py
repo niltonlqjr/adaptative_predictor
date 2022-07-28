@@ -5,6 +5,8 @@ import numpy as np
 
 from pathlib import Path
 
+from pkg_resources import working_set
+
 from extractors import SpeedupExtractor
 from yacos.essential import Sequence
 from yacos.essential import IO
@@ -12,6 +14,7 @@ from yacos.essential import IO
 def extract_speedup(benchmark_dir,
                     sequence_dict,
                     baseline,
+                    working_set,
                     runs):
     speedups={}
     SpeedupExtractor.set_number_runs(runs)
@@ -21,7 +24,8 @@ def extract_speedup(benchmark_dir,
         sequence_str = Sequence.name_pass_to_string(sequence_dict[s_name])
         print(sequence_str)
         speedups[s_name] = SpeedupExtractor.get_sepeedup(bench_dir=benchmark_dir,
-                                                         sequence_str=sequence_str)
+                                                         sequence_str=sequence_str,
+                                                         working_set=working_set)
     return speedups
 
 def run(args):
@@ -30,18 +34,22 @@ def run(args):
     output_dir = args.output_dir
     baseline = args.baseline
     runs = args.runs
+    working_set=args.working_set
 
     sequence_dict = IO.load_yaml_or_fail(sequences_file)
 
-    speedups = extract_speedup(bench_dir,sequence_dict, baseline, runs)
+    speedups = extract_speedup(bench_dir,sequence_dict, baseline, working_set,runs)
     
     os.makedirs(output_dir,exist_ok=True)
     print(f'saving files into:{output_dir}')
-    for s_name in speedups:
+    '''for s_name in speedups:
         outfile=str(s_name)+'_'+Path(bench_dir).stem
-        outfile=os.path.join(output_dir,outfile)
-        np.savez_compressed(outfile,
-                            values=speedups[s_name])
+        outfile=os.path.join(output_dir,outfile)'''
+    bench_name=Path(bench_dir).stem
+    outfile=os.path.join(output_dir,bench_name)
+    outfile+='.yaml'
+    IO.dump_yaml(data=speedups,
+                 filename=outfile)
 
 
 if __name__ == '__main__':
@@ -56,7 +64,7 @@ if __name__ == '__main__':
     parser.add_argument('--runs', '-r',
                         dest='runs',
                         type=int,
-                        default=1)
+                        default=3)
     parser.add_argument('--baseline','-b',
                         dest='baseline',
                         default='-O0',
@@ -64,6 +72,10 @@ if __name__ == '__main__':
     parser.add_argument('--output-dir','-o', dest='output_dir',
                         default='representations',
                         help='output directory of repersentation files')
+    parser.add_argument('--working-set','-w',
+                        dest='working_set',
+                        default='0',
+                        help='benchmark working set')
     args=parser.parse_args()
 
     run(args)
