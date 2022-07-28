@@ -4,12 +4,12 @@ for b in ${benchmarks[@]}
 do
     echo $b
     #Collect program repersentations
-    python3 src/feature_extractor.py -r histogram /home/nilton/adaptative_predictor/benchmakrs_test/$b/ -s config_files/sequences.yaml -o ignore/hist
-    python3 src/feature_extractor.py -r ir2vec /home/nilton/adaptative_predictor/benchmakrs_test/$b/ -s config_files/sequences.yaml -o ignore/ir2vec
+    python3 src/feature_extractor.py -r histogram /home/nilton/adaptative_predictor/benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/hist
+    python3 src/feature_extractor.py -r ir2vec /home/nilton/adaptative_predictor/benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/ir2vec
     #Collect program speedup 
-    python3 src/speedup_collector.py benchmakrs_test/$b/ -s config_files/sequences.yaml -o ignore/speedups/
+    python3 src/speedup_collector.py benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/speedups/
     #collect program runtime
-    python3 src/runtime_collector.py benchmakrs_test/$b/ -s config_files/sequences.yaml -o ignore/runtimes
+    python3 src/runtime_collector.py benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/runtimes
 done
 
 #Train deep learning model
