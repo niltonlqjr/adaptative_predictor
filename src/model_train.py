@@ -34,19 +34,39 @@ def build_model_dense(input_shape):
     return model
 
 def read_dataset(representation_dir,
-                 values_dir,
                  representation_ext,
-                 values_ext):
+                 representation_type,
+                 values_dir,
+                 values_ext,
+                 values_label,
+                 values_baseline):
     ret = {}
 
     files=glob.glob(os.path.join(representation_dir,'*.'+representation_ext))
 
+    baselines=set([])
+
     for filename in files:
         print(filename)
         bench_name = Path(filename).stem
-        x_data = IO.load_yaml_or_fail(filename)
+        x = IO.load_yaml_or_fail(filename)
+        x_data = x['data']
+        x_representation = x['represetntation_type']
+        if x_representation != representation_type:
+            raise Exception(f'invalid representation type at file: {filename}'+
+                            'Expected:{representation_type}. Get:{x_representation}')
+        
         value_filename = os.path.join(values_dir,bench_name+'.'+values_ext)
-        y_data = IO.load_yaml_or_fail(value_filename)
+        y = IO.load_yaml_or_fail(value_filename)
+        y_data = y['data']
+        y_label = y['label']
+        if y_label != values_label:
+            raise Exception(f'invalid values label at file:{filename}.'+
+                            'Expected:{values_label}. Get:{y_label}')
+        y_baseline = y['baseline']
+        if y_baseline != values_baseline:
+            raise Exception(f'invalid baseline  at file:{filename}.'+
+                            'Expected:{values_baseline}. Get:{y_baseline}')
         for seq in x_data:
             key=bench_name+'_'+str(seq)
             ret[key] = {}
@@ -65,11 +85,16 @@ def run(args):
     epochs = args.epochs
     output = args.output
     predict_train = args.predict_train
+    values_label = args.values_label
+    values_baseline = args.values_baseline
 
     dataset = read_dataset(representation_dir,
-                           values_dir,
                            representation_ext,
-                           values_ext)
+                           representation_type,
+                           values_dir,
+                           values_ext,
+                           values_label,
+                           values_baseline)
     
     if validation_samples != None:
         raise Exception("Validation support not implemented yet")
@@ -94,8 +119,13 @@ def run(args):
     output_path,filename = os.path.split(output)
     if output_path != '':
         os.makedirs(output_path,exist_ok=True)
-
-    IO.dump_pickle(model,output)
+    model_data = {}
+    model_data['model'] = model
+    model_data['values_label'] = values_label
+    model_data['representation_type'] = representation_type
+    model_data['baseline'] = values_baseline
+    model_data['scalerX'] = scalerX
+    IO.dump_pickle(model_data,output)
 
     if predict_train:
         p = model.predict(x)
@@ -132,6 +162,14 @@ if __name__ == '__main__':
                         dest='values_ext',
                         default='yaml',
                         help='extension of values files')
+    parser.add_argument('--values-label', '-l',
+                        dest='values_label',
+                        choices=['runtime','speedup'],
+                        default='speedup')
+    parser.add_argument('--values-baseline', '-b',
+                        default='-O0',
+                        dest='values_baseline',
+                        help='baseline used to extract y metric')
     parser.add_argument('--epochs','-e',
                         type=int,
                         dest='epochs',

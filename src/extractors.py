@@ -140,7 +140,7 @@ class Inst2vecExtractor:
         exit(0)
 
 class ExecutionGoalExtractor:
-    _number_runs = 1
+    _number_runs = 5
     _goal_list = ['runtime']
     _weight_list = ['1']
     @classmethod

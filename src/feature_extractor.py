@@ -72,7 +72,10 @@ def run(args):
     bench_name=Path(bench_dir).stem
     outfile=os.path.join(output_dir,bench_name)
     outfile+='.yaml'
-    IO.dump_yaml(data=representations,
+    data={}
+    data['data'] = representations
+    data['represetntation_type'] = representation
+    IO.dump_yaml(data=data,
                  filename=outfile)
 
 if __name__ == '__main__':

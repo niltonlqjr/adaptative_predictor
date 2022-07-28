@@ -44,7 +44,11 @@ def run(args):
     bench_name=Path(bench_dir).stem
     outfile=os.path.join(output_dir,bench_name)
     outfile+='.yaml'
-    IO.dump_yaml(data=runtimes,
+    data={}
+    data['label'] = 'runtime'
+    data['data'] = runtimes
+    data['baseline'] = '-O0'
+    IO.dump_yaml(data=data,
                  filename=outfile)
 
 
