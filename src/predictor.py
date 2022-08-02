@@ -22,13 +22,14 @@ def run(args):
     working_set = args.working_set
 
     model_data = IO.load_pickle_or_fail(model_file)
-    representation_type = model_data['representation_type']
-    target = model_data['values_label']
-    baseline = model_data['baseline']
-    model = model_data['model']
-    scalerX = model_data['scalerX']
-    print('representation (X):',model_data['representation_type'])
-    print('target (y):',model_data['values_label'])
+    regression_model_data = model_data['regression']['default']
+    representation_type = regression_model_data['representation_type']
+    target = regression_model_data['values_label']
+    baseline = regression_model_data['baseline']
+    model = regression_model_data['model']
+    scalerX = regression_model_data['scalerX']
+    print('representation (X):',regression_model_data['representation_type'])
+    print('target (y):',regression_model_data['values_label'])
     
 
     extractor = None

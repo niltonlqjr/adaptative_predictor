@@ -1,4 +1,6 @@
 import os
+
+from regex import B
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import glob
@@ -40,11 +42,9 @@ def read_dataset(representation_dir,
                  values_ext,
                  values_label,
                  values_baseline):
-    ret = {}
 
     files=glob.glob(os.path.join(representation_dir,'*.'+representation_ext))
-
-    baselines=set([])
+    ret={}
 
     for filename in files:
         print(filename)
@@ -67,13 +67,49 @@ def read_dataset(representation_dir,
         if y_baseline != values_baseline:
             raise Exception(f'invalid baseline  at file:{filename}.'+
                             'Expected:{values_baseline}. Get:{y_baseline}')
+        ret[bench_name] = {}
         for seq in x_data:
-            key=bench_name+'_'+str(seq)
-            ret[key] = {}
-            ret[key]['x'] = x_data[seq]
-            ret[key]['y'] = y_data[seq]
+            ret[bench_name][seq] = {}
+            ret[bench_name][seq]['x'] = x_data[seq]
+            ret[bench_name][seq]['y'] = y_data[seq]
     return ret
 
+def train_regression(dataset,
+                     epochs,
+                     predict_train):
+    x=[]
+    y=[]
+    for bench_name in dataset:
+        for seq in dataset[bench_name]:
+            x.append(dataset[bench_name][seq]['x'])
+            y.append(dataset[bench_name][seq]['y'])
+      
+    x = np.array(x)
+    y = np.array(y)
+
+    scalerX = MinMaxScaler()
+    scalerX.fit(x)
+    x = scalerX.transform(x)
+
+    model = build_model_dense(x.shape[1])
+
+    model.fit(x,y,epochs=epochs)
+
+    if predict_train:
+        p = model.predict(x)
+
+        for i in range(len(p)):
+            print('predicted:',p[i],'-> real:',y[i])
+
+    return model,scalerX
+
+def filter_dataset_cluster(dataset,
+                           program_list):
+    ret={}
+    for p in program_list:
+        if p in dataset:
+            ret[p] = dataset[p]
+    return ret
 
 def run(args):
     representation_dir = args.representation_dir
@@ -87,6 +123,7 @@ def run(args):
     predict_train = args.predict_train
     values_label = args.values_label
     values_baseline = args.values_baseline
+    cluster_file = args.cluster_file
 
     dataset = read_dataset(representation_dir,
                            representation_ext,
@@ -99,39 +136,32 @@ def run(args):
     if validation_samples != None:
         raise Exception("Validation support not implemented yet")
 
-    x=[]
-    y=[]
-    for e in dataset:
-        x.append(dataset[e]['x'])
-        y.append(dataset[e]['y'])
-      
-    x = np.array(x)
-    y = np.array(y)
+    if cluster_file == None:
+        clusters={'default':list(dataset.keys())}
+    
 
-    scalerX = MinMaxScaler()
-    scalerX.fit(x)
-    x = scalerX.transform(x)
+    regression_model_data={}
+    for k_id in clusters:
+        cluster_dataset = filter_dataset_cluster(dataset,
+                                                 clusters[k_id])
+        print(cluster_dataset.keys())
+        regression_model, scalerX_model = train_regression(cluster_dataset,
+                                                           epochs,
+                                                           predict_train)
 
-    model = build_model_dense(x.shape[1])
-
-    model.fit(x,y,epochs=epochs)
+        regression_model_data[k_id]={}
+        regression_model_data[k_id]['model'] = regression_model
+        regression_model_data[k_id]['values_label'] = values_label
+        regression_model_data[k_id]['representation_type'] = representation_type
+        regression_model_data[k_id]['baseline'] = values_baseline
+        regression_model_data[k_id]['scalerX'] = scalerX_model
 
     output_path,filename = os.path.split(output)
     if output_path != '':
         os.makedirs(output_path,exist_ok=True)
-    model_data = {}
-    model_data['model'] = model
-    model_data['values_label'] = values_label
-    model_data['representation_type'] = representation_type
-    model_data['baseline'] = values_baseline
-    model_data['scalerX'] = scalerX
+    model_data={}
+    model_data['regression']=regression_model_data
     IO.dump_pickle(model_data,output)
-
-    if predict_train:
-        p = model.predict(x)
-
-        for i in range(len(p)):
-            print('predicted:',p[i],'-> real:',y[i])
 
 
 if __name__ == '__main__':
@@ -179,7 +209,10 @@ if __name__ == '__main__':
                         dest='predict_train',
                         action='store_true',
                         help='Use this flag to predict the train dataset and print real vs predicted in stdout')
-
+    parser.add_argument('--cluster-file', '-c',
+                        dest='cluster_file',
+                        default=None,
+                        type=str)
     args=parser.parse_args()
     
     run(args)
