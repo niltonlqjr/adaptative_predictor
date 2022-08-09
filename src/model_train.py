@@ -26,7 +26,9 @@ def label_dataset_to_clusters(dataset,
 #pensar numa abordagem de clusterizacao: 
 # - utilizar uma unica versao do programa (com O0 por exemplo) para definir a qual cluster ele pertence
 # - cada versao do programa (com as diferentes otimizacoes) vai para o "seu cluster" 
-#eu prefiro a segunda alternativa, porem e necessario pensar numa forma de armazenar
+#eu prefiro a segunda alternativa,
+#eh necessario pensar numa forma de armazenar os arquivos que definem o cluster
+
 
 def build_model_dense(input_shape):
     model = Sequential([
