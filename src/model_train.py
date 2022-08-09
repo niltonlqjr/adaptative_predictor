@@ -22,12 +22,19 @@ from pathlib import Path
 
 def label_dataset_to_clusters(dataset,
                               clusters):
-    pass
-#pensar numa abordagem de clusterizacao: 
-# - utilizar uma unica versao do programa (com O0 por exemplo) para definir a qual cluster ele pertence
-# - cada versao do programa (com as diferentes otimizacoes) vai para o "seu cluster" 
-#eu prefiro a segunda alternativa,
-#eh necessario pensar numa forma de armazenar os arquivos que definem o cluster
+    reverse_list={}
+    
+    for k_id in clusters:
+        for p in clusters[k_id]:
+            reverse_list[p]=k_id
+    
+    ret = {}
+    for bench_name in dataset:
+        ret[bench_name]={}
+        for seq in dataset[bench_name]:
+            ret[bench_name][seq]=reverse_list[bench_name]
+    return ret
+    
 
 
 def build_model_dense(input_shape):
@@ -54,7 +61,16 @@ def read_dataset(representation_dir,
                  values_ext,
                  values_label,
                  values_baseline):
-
+    ''' 
+        Output description
+        -------------------
+        Read the dataset and store it into a dict
+        dataset keys are the benchmark name and its values is a dict
+            dataset[bench_name] keys are the sequeces and its values is a dict
+                dataset[bench_name][seq] is a dict with keys x and y
+                    x value is the bench_name features when compiled with seq
+                    y is the speedup of bench_name when compiled with seq
+    '''
     files=glob.glob(os.path.join(representation_dir,'*.'+representation_ext))
     ret={}
 
@@ -135,7 +151,7 @@ def run(args):
     predict_train = args.predict_train
     values_label = args.values_label
     values_baseline = args.values_baseline
-    cluster_file = args.cluster_file
+    clusters_file = args.clusters_file
 
     dataset = read_dataset(representation_dir,
                            representation_ext,
@@ -150,15 +166,15 @@ def run(args):
 
 
     try:
-        clusters = IO.load_yaml(cluster_file)    
+        clusters = IO.load_yaml(clusters_file)     
     except:
         clusters={'default':list(dataset.keys())}
+    
+    print(clusters)
+    labeled_dataset = label_dataset_to_clusters(dataset,
+                                                clusters)
 
-    #labeled_dataset = label_dataset_to_clusters(dataset,
-    #                                            clusters)
-
-
-
+    
     regression_model_data={}
     for k_id in clusters:
         cluster_dataset = filter_dataset_cluster(dataset,
@@ -223,14 +239,14 @@ if __name__ == '__main__':
     parser.add_argument('--epochs','-e',
                         type=int,
                         dest='epochs',
-                        default=300,
+                        default=1,
                         help='eppchs of NN training')
     parser.add_argument('--predict-train',
                         dest='predict_train',
                         action='store_true',
                         help='Use this flag to predict the train dataset and print real vs predicted in stdout')
-    parser.add_argument('--cluster-file', '-c',
-                        dest='cluster_file',
+    parser.add_argument('--clusters-file', '-c',
+                        dest='clusters_file',
                         default=None,
                         type=str)
     args=parser.parse_args()
