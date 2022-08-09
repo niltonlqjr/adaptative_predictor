@@ -31,13 +31,27 @@ def label_dataset_to_clusters(dataset,
     ret = {}
     for bench_name in dataset:
         ret[bench_name]={}
-        for seq in dataset[bench_name]:
-            ret[bench_name][seq]=reverse_list[bench_name]
+        ret[bench_name]['x']=dataset[bench_name]
+        ret[bench_name]['y']=reverse_list[bench_name]
+        #for seq in dataset[bench_name]:
+        #    ret[bench_name][seq]=reverse_list[bench_name]
     return ret
     
+def build_classification_model_dense(input_shape,
+                                     n_classes):
+    model = Sequential([
+        Dense(64, activation="relu", input_shape=[input_shape]),
+        Dense(32, activation="relu"),
+        Dense(16, activation="relu"),
+        Dense(32, activation="relu"),
+        Dense(n_classes, activation="softmax")
+    ])
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy'])
+    return model
 
-
-def build_model_dense(input_shape):
+def build_regression_model_dense(input_shape):
     model = Sequential([
         Dense(64, activation="relu", input_shape=[input_shape]),
         Dense(32, activation="relu"),
@@ -53,6 +67,14 @@ def build_model_dense(input_shape):
                   metrics=["mae", "mse"])
 
     return model
+
+def train_classification(dataset,
+                         epochs):
+    x=[]
+    y=[]
+    for bench_name in dataset:
+        pass
+
 
 def read_dataset(representation_dir,
                  representation_ext,
@@ -100,6 +122,7 @@ def read_dataset(representation_dir,
         if y_baseline != values_baseline:
             raise Exception(f'invalid baseline  at file:{filename}.'+
                             f'Expected:{values_baseline}. Get:{y_baseline}')
+        
         ret_x_baseline[bench_name] = x_baseline_feat
         ret[bench_name] = {}
         for seq in x_data:
@@ -125,7 +148,7 @@ def train_regression(dataset,
     scalerX.fit(x)
     x = scalerX.transform(x)
 
-    model = build_model_dense(x.shape[1])
+    model = build_regression_model_dense(x.shape[1])
 
     model.fit(x,y,epochs=epochs)
 
@@ -159,7 +182,7 @@ def run(args):
     values_baseline = args.values_baseline
     clusters_file = args.clusters_file
 
-    dataset,baselines_features = read_dataset(representation_dir,
+    dataset,dataset_baselines_features = read_dataset(representation_dir,
                            representation_ext,
                            representation_type,
                            values_dir,
@@ -177,9 +200,13 @@ def run(args):
         clusters={'default':list(dataset.keys())}
     
     print(clusters)
-    labeled_dataset = label_dataset_to_clusters(dataset,
+    for f_ in dataset_baselines_features:
+        print(f_)
+    labeled_dataset = label_dataset_to_clusters(dataset_baselines_features,
                                                 clusters)
 
+    train_classification(labeled_dataset,
+                         epochs)
     
     regression_model_data={}
     for k_id in clusters:
