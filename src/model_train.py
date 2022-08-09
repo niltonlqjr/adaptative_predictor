@@ -20,9 +20,19 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 from pathlib import Path
 
+def label_dataset_to_clusters(dataset,
+                              clusters):
+    pass
+#pensar numa abordagem de clusterizacao: 
+# - utilizar uma unica versao do programa (com O0 por exemplo) para definir a qual cluster ele pertence
+# - cada versao do programa (com as diferentes otimizacoes) vai para o "seu cluster" 
+#eu prefiro a segunda alternativa, porem e necessario pensar numa forma de armazenar
+
 def build_model_dense(input_shape):
     model = Sequential([
         Dense(64, activation="relu", input_shape=[input_shape]),
+        Dense(32, activation="relu"),
+        Dense(16, activation="relu"),
         Dense(32, activation="relu"),
         Dense(1)
     ])
@@ -136,9 +146,16 @@ def run(args):
     if validation_samples != None:
         raise Exception("Validation support not implemented yet")
 
-    if cluster_file == None:
+
+    try:
+        clusters = IO.load_yaml(cluster_file)    
+    except:
         clusters={'default':list(dataset.keys())}
-    
+
+    #labeled_dataset = label_dataset_to_clusters(dataset,
+    #                                            clusters)
+
+
 
     regression_model_data={}
     for k_id in clusters:
@@ -158,10 +175,10 @@ def run(args):
 
     output_path,filename = os.path.split(output)
     if output_path != '':
-        os.makedirs(output_path,exist_ok=True)
+        os.makedirs(output_path, exist_ok=True)
     model_data={}
     model_data['regression']=regression_model_data
-    IO.dump_pickle(model_data,output)
+    IO.dump_pickle(model_data, output)
 
 
 if __name__ == '__main__':
@@ -173,6 +190,7 @@ if __name__ == '__main__':
                         help='directory containing the tharget values for each dataset item')
     parser.add_argument('--representation-type', '-t',
                         default='ir2vec',
+                        choices=['ir2vec','inst2vec','histogram'],
                         dest='representation_type',
                         help='type of representation')
     parser.add_argument('--output', '-o',
@@ -203,7 +221,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs','-e',
                         type=int,
                         dest='epochs',
-                        default=10,
+                        default=300,
                         help='eppchs of NN training')
     parser.add_argument('--predict-train',
                         dest='predict_train',
