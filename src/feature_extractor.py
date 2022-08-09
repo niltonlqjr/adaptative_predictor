@@ -17,7 +17,8 @@ from yacos.info.compy.extractors import LLVMDriver
 
 from extractors import *
 
-def extract_representations_sequences(bench_dir, sequence_dict, representation):
+def extract_representations_sequences(bench_dir, sequence_dict, 
+                                      representation, baseline):
     """
     extract the representation of one benchmark with a collection of sequences
     bench_dir: str
@@ -25,6 +26,8 @@ def extract_representations_sequences(bench_dir, sequence_dict, representation):
     sequence_dict: dict
         a dictionary where the keys are the sequence name and the values are
         a list with compiler passes
+    baseline: string
+        default optimization compiler level used as baseline
     representation: str
         a string with the representation that will be extracted
         valid values:
@@ -41,27 +44,36 @@ def extract_representations_sequences(bench_dir, sequence_dict, representation):
         extractor = Inst2Vec
 
     representations={}
+
+    baseline_representation = extractor.extract_representation(bench_dir,
+                                                     baseline)
+
     for s_name in sequence_dict:
         sequence_str = Sequence.name_pass_to_string(sequence_dict[s_name])
         print(sequence_str)
         representations[s_name] = extractor.extract_representation(bench_dir,
                                     sequence_str)
-    return representations
+    return representations,baseline_representation
 
 def run(args):
     bench_dir = args.program_dir
     sequence_file=args.sequences_file
     representation=args.representation
     output_dir=args.output_dir
+    baseline = args.baseline
 
     sequence_dict = IO.load_yaml_or_fail(sequence_file)
     representations={}
+    if 'baseline' in sequence_dict:
+        print('invalide sequence name: baseline',file=sys.stderr)
+        exit(0)
 
     print('extrcting representations')
 
-    representations=extract_representations_sequences(bench_dir,
+    representations,baseline_repr=extract_representations_sequences(bench_dir,
                                                       sequence_dict,
-                                                      representation)
+                                                      representation,
+                                                      baseline)
 
     os.makedirs(output_dir,exist_ok=True)
 
@@ -74,6 +86,8 @@ def run(args):
     outfile+='.yaml'
     data={}
     data['data'] = representations
+    data['baseline_features']=baseline_repr
+    data['baseline_name'] = baseline
     data['represetntation_type'] = representation
     IO.dump_yaml(data=data,
                  filename=outfile)
@@ -91,6 +105,10 @@ if __name__ == '__main__':
                         choices=['ir2vec','inst2vec','histogram'],
                         default='ir2vec',
                         help='representation to be extracted')
+    parser.add_argument('--baseline','-b',
+                        dest='baseline',
+                        default='-O0',
+                        help='Compiler optimization level to use as baseline ')
     parser.add_argument('--output-dir','-o', dest='output_dir',
                         default='representations',
                         help='output directory of repersentation files')

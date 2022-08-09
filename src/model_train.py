@@ -73,16 +73,21 @@ def read_dataset(representation_dir,
     '''
     files=glob.glob(os.path.join(representation_dir,'*.'+representation_ext))
     ret={}
-
+    ret_x_baseline={}
     for filename in files:
         print(filename)
         bench_name = Path(filename).stem
         x = IO.load_yaml_or_fail(filename)
         x_data = x['data']
+        x_baseline_feat = x['baseline_features']
+        x_baseline = x['baseline_name']
+        if x_baseline != values_baseline:
+            raise Exception(f'invalid baseline  at file:{filename}.'+
+                            f'Expected:{values_baseline}. Get:{x_baseline}')
         x_representation = x['represetntation_type']
         if x_representation != representation_type:
             raise Exception(f'invalid representation type at file: {filename}'+
-                            'Expected:{representation_type}. Get:{x_representation}')
+                            f'Expected:{representation_type}. Get:{x_representation}')
         
         value_filename = os.path.join(values_dir,bench_name+'.'+values_ext)
         y = IO.load_yaml_or_fail(value_filename)
@@ -90,17 +95,18 @@ def read_dataset(representation_dir,
         y_label = y['label']
         if y_label != values_label:
             raise Exception(f'invalid values label at file:{filename}.'+
-                            'Expected:{values_label}. Get:{y_label}')
+                            f'Expected:{values_label}. Get:{y_label}')
         y_baseline = y['baseline']
         if y_baseline != values_baseline:
             raise Exception(f'invalid baseline  at file:{filename}.'+
-                            'Expected:{values_baseline}. Get:{y_baseline}')
+                            f'Expected:{values_baseline}. Get:{y_baseline}')
+        ret_x_baseline[bench_name] = x_baseline_feat
         ret[bench_name] = {}
         for seq in x_data:
             ret[bench_name][seq] = {}
             ret[bench_name][seq]['x'] = x_data[seq]
             ret[bench_name][seq]['y'] = y_data[seq]
-    return ret
+    return ret,ret_x_baseline
 
 def train_regression(dataset,
                      epochs,
@@ -153,7 +159,7 @@ def run(args):
     values_baseline = args.values_baseline
     clusters_file = args.clusters_file
 
-    dataset = read_dataset(representation_dir,
+    dataset,baselines_features = read_dataset(representation_dir,
                            representation_ext,
                            representation_type,
                            values_dir,
