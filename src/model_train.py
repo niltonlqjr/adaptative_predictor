@@ -254,13 +254,13 @@ def run(args):
         regression_model_data[encoded_kid]['model'] = regression_model
         regression_model_data[encoded_kid]['values_label'] = values_label
         regression_model_data[encoded_kid]['representation_type'] = representation_type
-        regression_model_data[encoded_kid]['baseline'] = values_baseline
         regression_model_data[encoded_kid]['scalerX'] = scalerX_model
 
     output_path,filename = os.path.split(output)
     if output_path != '':
         os.makedirs(output_path, exist_ok=True)
     model_data={}
+    model_data['baseline'] = values_baseline
     model_data['regression']=regression_model_data
     model_data['classification']=classification_model_data
     IO.dump_pickle(model_data, output)

@@ -12,4 +12,4 @@ done
 #Train deep learning model
 python3 src/model_train.py ignore/ir2vec/ ignore/speedups/ -t ir2vec -l speedup -o ignore/models/speedup_ir2vec_model.pck --clusters-file=config_files/clusters.yaml
 #Predict value
-python3 src/predictor.py benchmarks_train/automotive-basicmath-small/ -m ignore/models/speedup_ir2vec_model.pck -s="-O2"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/speedup_ir2vec_model.pck -s="-O2"

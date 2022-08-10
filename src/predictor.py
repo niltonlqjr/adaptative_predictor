@@ -24,6 +24,7 @@ def run(args):
 
 
     model_data = IO.load_pickle_or_fail(model_file)
+    baseline = model_data['baseline']
     classification_model_data=model_data['classification']
     representation_type = classification_model_data['representation']
     class_model = classification_model_data['model']
@@ -36,26 +37,37 @@ def run(args):
     elif representation_type == 'histogram':
         extractor = HistogramExtractor
     
-    #extract representation from test program
-    representation = extractor.extract_representation(benchmark_dir,sequence)    
+    #extract representation from test program for classification
+    representation = extractor.extract_representation(benchmark_dir,baseline)
     #normalize representation for classification
     representation_clasification = scalerX_class.transform([representation])
     #get probability of each class
     prob_class = class_model.predict([representation_clasification])
     #get the real class
+    
+    
+    
     max_prob = max(prob_class)
     predicted_class = np.where(prob_class[0] == max_prob)[0][0]
+
+    cluster_file_id = encoderY_class.inverse_transform([predicted_class])
+    print('predicted class:',predicted_class)
+    print('cluster: ', cluster_file_id)
+
+
 
     #select the regression model
     regression_model_data = model_data['regression'][predicted_class]
     representation_type = regression_model_data['representation_type']
     target = regression_model_data['values_label']
-    baseline = regression_model_data['baseline']
     model = regression_model_data['model']
     scalerX = regression_model_data['scalerX']
     print('representation (X):',regression_model_data['representation_type'])
     print('target (y):',regression_model_data['values_label'])
 
+    
+    #extract representation from test program for regression
+    representation = extractor.extract_representation(benchmark_dir,sequence)
     #normalize representation for regression
     representation_regression = scalerX.transform([representation])
     real_target = None
