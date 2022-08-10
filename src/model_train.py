@@ -1,6 +1,8 @@
+from gettext import find
 import os
 
 from regex import B
+from sklearn.metrics import classification_report
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import glob
@@ -11,6 +13,9 @@ import tensorflow as tf
 
 from yacos.essential import IO
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import LabelEncoder
+
+from keras.utils import np_utils
 
 from tensorflow.keras import Model
 from tensorflow.keras.models import Sequential
@@ -19,62 +24,6 @@ from tensorflow.keras.layers import Bidirectional, Input, MaxPooling1D, LSTM, co
 from tensorflow.keras.callbacks import EarlyStopping
 
 from pathlib import Path
-
-def label_dataset_to_clusters(dataset,
-                              clusters):
-    reverse_list={}
-    
-    for k_id in clusters:
-        for p in clusters[k_id]:
-            reverse_list[p]=k_id
-    
-    ret = {}
-    for bench_name in dataset:
-        ret[bench_name]={}
-        ret[bench_name]['x']=dataset[bench_name]
-        ret[bench_name]['y']=reverse_list[bench_name]
-        #for seq in dataset[bench_name]:
-        #    ret[bench_name][seq]=reverse_list[bench_name]
-    return ret
-    
-def build_classification_model_dense(input_shape,
-                                     n_classes):
-    model = Sequential([
-        Dense(64, activation="relu", input_shape=[input_shape]),
-        Dense(32, activation="relu"),
-        Dense(16, activation="relu"),
-        Dense(32, activation="relu"),
-        Dense(n_classes, activation="softmax")
-    ])
-    model.compile(loss='categorical_crossentropy',
-                  optimizer='adam',
-                  metrics=['accuracy'])
-    return model
-
-def build_regression_model_dense(input_shape):
-    model = Sequential([
-        Dense(64, activation="relu", input_shape=[input_shape]),
-        Dense(32, activation="relu"),
-        Dense(16, activation="relu"),
-        Dense(32, activation="relu"),
-        Dense(1)
-    ])
-
-    optimizer = tf.keras.optimizers.RMSprop(0.001)
-
-    model.compile(loss="mse",
-                  optimizer=optimizer,
-                  metrics=["mae", "mse"])
-
-    return model
-
-def train_classification(dataset,
-                         epochs):
-    x=[]
-    y=[]
-    for bench_name in dataset:
-        pass
-
 
 def read_dataset(representation_dir,
                  representation_ext,
@@ -131,6 +80,82 @@ def read_dataset(representation_dir,
             ret[bench_name][seq]['y'] = y_data[seq]
     return ret,ret_x_baseline
 
+def label_dataset_to_clusters(dataset,
+                              clusters):
+    reverse_list={}
+    
+    for k_id in clusters:
+        for p in clusters[k_id]:
+            reverse_list[p]=k_id
+    
+    ret = {}
+    for bench_name in dataset:
+        ret[bench_name]={}
+        ret[bench_name]['x']=dataset[bench_name]
+        ret[bench_name]['y']=reverse_list[bench_name]
+        #for seq in dataset[bench_name]:
+        #    ret[bench_name][seq]=reverse_list[bench_name]
+    return ret
+
+def build_classification_model_dense(input_shape,
+                                     n_classes):
+    model = Sequential([
+        Dense(64, activation="relu", input_shape=[input_shape]),
+        Dense(32, activation="relu"),
+        Dense(16, activation="relu"),
+        Dense(32, activation="relu"),
+        Dense(n_classes, activation="softmax")
+    ])
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy'])
+    return model
+
+def build_regression_model_dense(input_shape):
+    model = Sequential([
+        Dense(64, activation="relu", input_shape=[input_shape]),
+        Dense(32, activation="relu"),
+        Dense(16, activation="relu"),
+        Dense(32, activation="relu"),
+        Dense(1)
+    ])
+
+    optimizer = tf.keras.optimizers.RMSprop(0.001)
+
+    model.compile(loss="mse",
+                  optimizer=optimizer,
+                  metrics=["mae", "mse"])
+
+    return model
+
+def train_classification(dataset,
+                         epochs):
+    x=[]
+    y=[]
+    for bench_name in dataset:
+        x.append(dataset[bench_name]['x'])
+        y.append(dataset[bench_name]['y'])
+    
+    scalerX = MinMaxScaler()
+    scalerX.fit(x)
+    x = scalerX.transform(x)
+    encoderY = LabelEncoder()
+    encoderY.fit(y)
+    y = encoderY.transform(y)
+    cat_y = np_utils.to_categorical(y)
+    
+    model=build_classification_model_dense(x.shape[1],
+                                           cat_y.shape[1])
+
+    model.fit(x,cat_y,epochs=epochs,verbose=0)
+
+    p=model.predict(x)
+    for i in range(len(p)):
+        max_val=max(p[i])
+        print('predicted:',np.where(p[i]==max_val)[0][0],'-> real:',y[i])
+
+    return model,scalerX,encoderY
+
 def train_regression(dataset,
                      epochs,
                      predict_train):
@@ -150,7 +175,7 @@ def train_regression(dataset,
 
     model = build_regression_model_dense(x.shape[1])
 
-    model.fit(x,y,epochs=epochs)
+    model.fit(x,y,epochs=epochs,verbose=0)
 
     if predict_train:
         p = model.predict(x)
@@ -205,11 +230,19 @@ def run(args):
     labeled_dataset = label_dataset_to_clusters(dataset_baselines_features,
                                                 clusters)
 
-    train_classification(labeled_dataset,
-                         epochs)
-    
+    class_model, scalerX_class, encoderY_class = train_classification(
+                                                    labeled_dataset,
+                                                    epochs
+                                                )
+    classification_model_data={}
+    classification_model_data['model']=class_model
+    classification_model_data['scalerX']=scalerX_class
+    classification_model_data['encoderY']=encoderY_class
+    classification_model_data['representation']=representation_type
+
     regression_model_data={}
     for k_id in clusters:
+        encoded_kid=encoderY_class.transform([k_id])[0]
         cluster_dataset = filter_dataset_cluster(dataset,
                                                  clusters[k_id])
         print(cluster_dataset.keys())
@@ -217,18 +250,19 @@ def run(args):
                                                            epochs,
                                                            predict_train)
 
-        regression_model_data[k_id]={}
-        regression_model_data[k_id]['model'] = regression_model
-        regression_model_data[k_id]['values_label'] = values_label
-        regression_model_data[k_id]['representation_type'] = representation_type
-        regression_model_data[k_id]['baseline'] = values_baseline
-        regression_model_data[k_id]['scalerX'] = scalerX_model
+        regression_model_data[encoded_kid]={}
+        regression_model_data[encoded_kid]['model'] = regression_model
+        regression_model_data[encoded_kid]['values_label'] = values_label
+        regression_model_data[encoded_kid]['representation_type'] = representation_type
+        regression_model_data[encoded_kid]['baseline'] = values_baseline
+        regression_model_data[encoded_kid]['scalerX'] = scalerX_model
 
     output_path,filename = os.path.split(output)
     if output_path != '':
         os.makedirs(output_path, exist_ok=True)
     model_data={}
     model_data['regression']=regression_model_data
+    model_data['classification']=classification_model_data
     IO.dump_pickle(model_data, output)
 
 
@@ -272,7 +306,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs','-e',
                         type=int,
                         dest='epochs',
-                        default=1,
+                        default=10,
                         help='eppchs of NN training')
     parser.add_argument('--predict-train',
                         dest='predict_train',

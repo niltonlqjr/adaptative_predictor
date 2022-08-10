@@ -1,4 +1,4 @@
-benchmarks=('automotive-basicmath-small' 'automotive-bitcount')
+benchmarks=('automotive-basicmath-small' 'automotive-bitcount' 'automotive-qsort-large')
 
 for b in ${benchmarks[@]}
 do

@@ -1,4 +1,4 @@
-benchmarks=('automotive-basicmath-small' 'automotive-bitcount')
+benchmarks=('automotive-basicmath-small' 'automotive-bitcount' 'automotive-qsort-large')
 
 
 #Train deep learning model
