@@ -297,7 +297,7 @@ if __name__ == '__main__':
                         help='extension of values files')
     parser.add_argument('--values-label', '-l',
                         dest='values_label',
-                        choices=['runtime','speedup'],
+                        choices=['runtime','speedup','cycles'],
                         default='speedup')
     parser.add_argument('--values-baseline', '-b',
                         default='-O0',

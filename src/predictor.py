@@ -84,6 +84,20 @@ def run(args):
             real_target = SpeedupExtractor.get_sepeedup(benchmark_dir,
                                           sequence,
                                           working_set)
+        elif target == 'cycles':
+                ExecutionGoalExtractor.set_goal(['cycles'],['1'])
+                ExecutionGoalExtractor.set_number_runs(1)
+                real_target = ExecutionGoalExtractor.get_execution_goal(
+                                                    benchmark_dir,
+                                                    sequence,
+                                                    working_set)
+        elif target == 'runtime':
+            ExecutionGoalExtractor.set_goal(['runtime'],['1'])
+            ExecutionGoalExtractor.set_number_runs(1)
+            real_target = ExecutionGoalExtractor.get_execution_goal(
+                                                    benchmark_dir,
+                                                    sequence,
+                                                    working_set)
         out_str += f'-> real value:{real_target}'
     
     print(out_str)

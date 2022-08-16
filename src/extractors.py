@@ -143,6 +143,7 @@ class ExecutionGoalExtractor:
     _number_runs = 5
     _goal_list = ['runtime']
     _weight_list = ['1']
+    _tool='hyperfine'
     @classmethod
     def set_number_runs(cls, 
                         num):
@@ -167,6 +168,20 @@ class ExecutionGoalExtractor:
             weight_list: list
                 each element is the wieght (string) for the goal at the same position of goal_list 
         """
+        throw_exception = False
+        if 'runtime' in goal_list:
+            if 'cycles' in goal_list:
+                throw_exception=True
+            else:
+                cls._tool = 'hyperfine'
+        elif 'cycles' in goal_list:
+            if 'runtime' in goal_list:
+                throw_exception = True
+            else:
+                cls._tool = 'perf'
+    
+        if throw_exception:
+            raise Exception ("cycles and runtime can't be in the same goal list")
         if len(goal_list) != len(weight_list):
             raise Exception("Goal list and weight list must have the same length")
         cls._goal_list = goal_list
@@ -190,6 +205,7 @@ class ExecutionGoalExtractor:
         goal_seq = Engine.evaluate(goals=goal,
                                     sequence=sequence_str,
                                     compiler='opt',
+                                    tool=cls._tool,
                                     benchmark_directory=bench_dir,
                                     times=cls._number_runs,
                                     working_set=working_set)
@@ -205,12 +221,15 @@ class SpeedupExtractor(ExecutionGoalExtractor):
         """set the baseline used to calculate speedup (default O0)"""
         cls._baseline=baseline
 
-    @classmethod
+    '''   @classmethod
     def set_goal(cls,
                  goal_list,
                  weight_list):
-        raise Exception("You can't change the goal for speedup. It must be runtime")
+        if goal_list != ['runtime'] or goal_list != ['cycles']:
+            raise Exception("The goal for speedup must be a runtime or cycles")
 
+        cls.set_goal(goal_list,weight_list)
+    '''
     @classmethod
     def get_sepeedup(cls, 
                      bench_dir,

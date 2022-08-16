@@ -24,8 +24,8 @@ function execute() {
                 echo "Halting execution (perf) due to some error" > error.log
                 exit 1
             fi
-            data=`sed '1!d' runtime.csv | awk -F',' '{printf "%s", $1}'` ; echo "- $data" > cycles.yaml
-            data=`sed '2!d' runtime.csv | awk -F',' '{printf "%s", $1}'` ; echo "- $data" > instructions.yaml
+            data=`sed '3!d' runtime.csv | awk -F',' '{printf "%s", $1}'` ; echo "- $data" > cycles.yaml
+            data=`sed '4!d' runtime.csv | awk -F',' '{printf "%s", $1}'` ; echo "- $data" > instructions.yaml
             ;;
         "hyperfine")
             hyperfine -w $WARMUP_CACHE -r $TIMES --show-output \
