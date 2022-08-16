@@ -24,9 +24,9 @@ python3 src/model_train.py ignore/ir2vec/ ignore/cycles/ -t ir2vec -l cycles -o 
 python3 src/model_train.py ignore/hist/ ignore/cycles/ -t histogram -l cycles -o ignore/models/cycles_hist_model.pck --predict-train
 
 
-python3 src/predictor.py benchmarks_train/automotive-basicmath-small/ -m ignore/models/speedup_ir2vec_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_train/automotive-basicmath-small/ -m ignore/models/speedup_hist_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_train/automotive-basicmath-small/ -m ignore/models/runtimes_ir2vec_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_train/automotive-basicmath-small/ -m ignore/models/runtime_hist_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_train/automotive-basicmath-small/ -m ignore/models/cycles_ir2vec_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_train/automotive-basicmath-small/ -m ignore/models/cycles_hist_model.pck -s="-O0"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/speedup_ir2vec_model.pck -s="-O0"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/speedup_hist_model.pck -s="-O0"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/runtimes_ir2vec_model.pck -s="-O0"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/runtime_hist_model.pck -s="-O0"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/cycles_ir2vec_model.pck -s="-O0"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/cycles_hist_model.pck -s="-O0"
