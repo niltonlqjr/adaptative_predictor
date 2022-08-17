@@ -46,7 +46,7 @@ def run(args):
     #get the real class
     
     
-    print(prob_class)
+    print('probablilty of classes:',prob_class)
     max_prob = max(prob_class[0])
     predicted_class = np.where(prob_class[0] == max_prob)[0][0]
 
