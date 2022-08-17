@@ -15,18 +15,22 @@ do
 
 done
 
+#cluster the train programs
+python3 src/clustering.py ignore/ir2vec/ -n 3 -o ignore/clusters_ir2vec.yaml
+python3 src/clustering.py ignore/hist/ -n 3 -o ignore/clusters_histogram.yaml 
+
 #Train deep learning model
-python3 src/model_train.py ignore/ir2vec/ ignore/speedups/ -t ir2vec -l speedup -o ignore/models/speedup_ir2vec_model.pck --predict-train
-python3 src/model_train.py ignore/hist/ ignore/speedups/ -t histogram -l speedup -o ignore/models/speedup_hist_model.pck --predict-train
-python3 src/model_train.py ignore/ir2vec/ ignore/runtimes/ -t ir2vec -l runtime -o ignore/models/runtimes_ir2vec_model.pck --predict-train
-python3 src/model_train.py ignore/hist/ ignore/runtimes/ -t histogram -l runtime -o ignore/models/runtime_hist_model.pck --predict-train
-python3 src/model_train.py ignore/ir2vec/ ignore/cycles/ -t ir2vec -l cycles -o ignore/models/cycles_ir2vec_model.pck --predict-train
-python3 src/model_train.py ignore/hist/ ignore/cycles/ -t histogram -l cycles -o ignore/models/cycles_hist_model.pck --predict-train
+python3 src/model_train.py ignore/ir2vec/ ignore/speedups/ -t ir2vec -l speedup -o ignore/models/speedup_ir2vec_model.pck --predict-train -c ignore/clusters_ir2vec.yaml
+python3 src/model_train.py ignore/hist/ ignore/speedups/ -t histogram -l speedup -o ignore/models/speedup_hist_model.pck --predict-train -c ignore/clusters_histogram.yaml 
+python3 src/model_train.py ignore/ir2vec/ ignore/runtimes/ -t ir2vec -l runtime -o ignore/models/runtimes_ir2vec_model.pck --predict-train -c ignore/clusters_ir2vec.yaml
+python3 src/model_train.py ignore/hist/ ignore/runtimes/ -t histogram -l runtime -o ignore/models/runtime_hist_model.pck --predict-train -c ignore/clusters_histogram.yaml 
+python3 src/model_train.py ignore/ir2vec/ ignore/cycles/ -t ir2vec -l cycles -o ignore/models/cycles_ir2vec_model.pck --predict-train -c ignore/clusters_ir2vec.yaml
+python3 src/model_train.py ignore/hist/ ignore/cycles/ -t histogram -l cycles -o ignore/models/cycles_hist_model.pck --predict-train -c ignore/clusters_histogram.yaml 
 
-
-python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/speedup_ir2vec_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/speedup_hist_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/runtimes_ir2vec_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/runtime_hist_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/cycles_ir2vec_model.pck -s="-O0"
-python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/cycles_hist_model.pck -s="-O0"
+#predict values
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/speedup_ir2vec_model.pck -s="-O2"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/speedup_hist_model.pck -s="-O2"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/runtimes_ir2vec_model.pck -s="-O2"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/runtime_hist_model.pck -s="-O2"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/cycles_ir2vec_model.pck -s="-O2"
+python3 src/predictor.py benchmarks_test/automotive-susan-c/ -m ignore/models/cycles_hist_model.pck -s="-O2"

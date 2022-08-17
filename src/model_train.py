@@ -242,7 +242,7 @@ def run(args):
 
     regression_model_data={}
     for k_id in clusters:
-        encoded_kid=encoderY_class.transform([k_id])[0]
+        encoded_k_id=encoderY_class.transform([k_id])[0]
         cluster_dataset = filter_dataset_cluster(dataset,
                                                  clusters[k_id])
         print(cluster_dataset.keys())
@@ -250,11 +250,11 @@ def run(args):
                                                            epochs,
                                                            predict_train)
 
-        regression_model_data[encoded_kid]={}
-        regression_model_data[encoded_kid]['model'] = regression_model
-        regression_model_data[encoded_kid]['values_label'] = values_label
-        regression_model_data[encoded_kid]['representation_type'] = representation_type
-        regression_model_data[encoded_kid]['scalerX'] = scalerX_model
+        regression_model_data[encoded_k_id]={}
+        regression_model_data[encoded_k_id]['model'] = regression_model
+        regression_model_data[encoded_k_id]['values_label'] = values_label
+        regression_model_data[encoded_k_id]['representation_type'] = representation_type
+        regression_model_data[encoded_k_id]['scalerX'] = scalerX_model
 
     output_path,filename = os.path.split(output)
     if output_path != '':

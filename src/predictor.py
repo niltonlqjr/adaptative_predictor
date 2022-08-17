@@ -46,8 +46,8 @@ def run(args):
     #get the real class
     
     
-    
-    max_prob = max(prob_class)
+    print(prob_class)
+    max_prob = max(prob_class[0])
     predicted_class = np.where(prob_class[0] == max_prob)[0][0]
 
     cluster_file_id = encoderY_class.inverse_transform([predicted_class])
