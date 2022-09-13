@@ -15,14 +15,21 @@ RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && apt-get update -y
 
 RUN DEBIAN_FRONTEND="noninteractive" TZ="America/Sao_Paulo" \
-    apt-get install -y graphviz libgraphviz-dev creduce libeigen3-dev \
+    apt-get install -y graphviz libgraphviz-dev creduce libeigen3-dev linux-tools-generic bc \
     clang-10 clang-format-10 libclang1-10 libclang-10-dev libclang-common-10-dev \
     wget python3 python3-dev python3-pip python3-virtualenv python3-setuptools \
     python3-ipython python-is-python3 gcc g++ cmake make binutils git tar zip unzip
 
+
 RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100 \
     && update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 100 \
-    && update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-10 100
+    && update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-10 100 \
+    && update-alternatives --install /usr/bin/opt opt /usr/bin/opt-10 100 \
+    && update-alternatives --install /usr/bin/llvm-link llvm-link /usr/bin/llvm-link-10 100 \
+    && update-alternatives --install /usr/bin/llc llc /usr/bin/llc-10 100 \
+    && rm /usr/bin/perf \
+    && update-alternatives --install /usr/bin/perf perf /usr/lib/linux-tools/5.4.0-125-generic/perf 100
+
 
 RUN wget https://github.com/sharkdp/hyperfine/releases/download/v1.11.0/hyperfine_1.11.0_amd64.deb \
     && dpkg -i hyperfine_1.11.0_amd64.deb && rm -f hyperfine_1.11.0_amd64.deb
