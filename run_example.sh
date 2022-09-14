@@ -4,8 +4,8 @@ for b in ${benchmarks[@]}
 do
     echo $b
     #Collect program repersentations
-    python3 src/feature_extractor.py -r histogram /home/nilton/adaptative_predictor/benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/hist
-    python3 src/feature_extractor.py -r ir2vec /home/nilton/adaptative_predictor/benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/ir2vec
+    python3 src/feature_extractor.py -r histogram benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/hist
+    python3 src/feature_extractor.py -r ir2vec benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/ir2vec
     #Collect program speedup 
     python3 src/speedup_collector.py benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/speedups/
     #collect program runtime
