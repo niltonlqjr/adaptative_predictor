@@ -1,3 +1,4 @@
+import numbers
 import os
 from pkg_resources import working_set
 from sklearn.metrics import classification_report
@@ -21,8 +22,11 @@ def run(args):
     sequence = args.sequence
     only_predict = args.only_predict
     working_set = args.working_set
+    output_file = args.output_file
+    number_runs = args.number_runs
 
-
+    output = {}
+    
     model_data = IO.load_pickle_or_fail(model_file)
     baseline = model_data['baseline']
     classification_model_data=model_data['classification']
@@ -37,6 +41,10 @@ def run(args):
     elif representation_type == 'histogram':
         extractor = HistogramExtractor
     
+    output['info'] = {}
+    output['info']['representation_type'] = representation_type
+    output['info']['baseline']=baseline
+
     #extract representation from test program for classification
     representation = extractor.extract_representation(benchmark_dir,baseline)
     #normalize representation for classification
@@ -44,17 +52,20 @@ def run(args):
     #get probability of each class
     prob_class = class_model.predict([representation_clasification])
     #get the real class
+    output['result']={}
+    output['result']['probability_class'] = list([float(x) for x in prob_class[0]])
     
-    
-    print('probablilty of classes:',prob_class)
+    print('probablilty of classes:',list(prob_class[0]))
     max_prob = max(prob_class[0])
     predicted_class = np.where(prob_class[0] == max_prob)[0][0]
+
+    output['result']['predicted_class']=int(predicted_class)
 
     cluster_file_id = encoderY_class.inverse_transform([predicted_class])
     print('predicted class:',predicted_class)
     print('cluster: ', cluster_file_id)
 
-
+    output['result']['cluster_file_id'] = int(cluster_file_id[0])
 
     #select the regression model
     regression_model_data = model_data['regression'][predicted_class]
@@ -76,7 +87,9 @@ def run(args):
     pred_target = model.predict(representation_regression)
 
     print('program:',benchmark_dir)
-    out_str = f'predicted value:{pred_target}'
+    out_str = f'predicted value:{pred_target[0][0]}'
+
+    output['result']['predicted_value'] = float(pred_target[0][0])
 
     if not only_predict:
         if target == 'speedup':
@@ -86,20 +99,21 @@ def run(args):
                                           working_set)
         elif target == 'cycles':
                 ExecutionGoalExtractor.set_goal(['cycles'],['1'])
-                ExecutionGoalExtractor.set_number_runs(1)
+                ExecutionGoalExtractor.set_number_runs(number_runs)
                 real_target = ExecutionGoalExtractor.get_execution_goal(
                                                     benchmark_dir,
                                                     sequence,
                                                     working_set)
         elif target == 'runtime':
             ExecutionGoalExtractor.set_goal(['runtime'],['1'])
-            ExecutionGoalExtractor.set_number_runs(1)
+            ExecutionGoalExtractor.set_number_runs(number_runs)
             real_target = ExecutionGoalExtractor.get_execution_goal(
                                                     benchmark_dir,
                                                     sequence,
                                                     working_set)
         out_str += f'-> real value:{real_target}'
-    
+        output['result']['real_value']=real_target
+    IO.dump_yaml(output,output_file)
     print(out_str)
 
     
@@ -111,9 +125,9 @@ if __name__ == '__main__':
     parser.add_argument('benchmark_dir',
                         help='directory containing benchmark')
     parser.add_argument('--output', '-o',
-                        default='model.pck',
-                        dest='output',
-                        help='filename to store the NN model (pickle format)')
+                        default='output.yaml',
+                        dest='output_file',
+                        help='filename to store the output')
     parser.add_argument('--model-file', '-m',
                         default='model.pck',
                         type=str,
@@ -131,6 +145,11 @@ if __name__ == '__main__':
                         dest='working_set',
                         default='0',
                         help='benchmark working set')
+    parser.add_argument('--number-runs', '-r',
+                        dest='number_runs',
+                        default=1,
+                        type=int,
+                        help='number of runs to collect real value (only used when only predict is disabled)')
     args=parser.parse_args()
     
     run(args)
