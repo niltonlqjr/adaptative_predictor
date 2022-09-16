@@ -117,7 +117,7 @@ def build_regression_model_dense(input_shape):
         Dense(32, activation="relu"),
         Dense(16, activation="relu"),
         Dense(32, activation="relu"),
-        Dense(1)
+        Dense(1, activation="softplus")
     ])
 
     optimizer = tf.keras.optimizers.RMSprop(0.001)
