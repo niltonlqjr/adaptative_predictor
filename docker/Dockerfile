@@ -3,7 +3,6 @@ FROM ubuntu:20.04
 # FROM nvidia/cuda:11.2.0-runtime-ubuntu20.04
 
 RUN apt-get update -y && apt-get install -y locales gnupg curl sudo \
-    && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 ENV LANG en_US.utf8
@@ -26,9 +25,9 @@ RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 1
     && update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-10 100 \
     && update-alternatives --install /usr/bin/opt opt /usr/bin/opt-10 100 \
     && update-alternatives --install /usr/bin/llvm-link llvm-link /usr/bin/llvm-link-10 100 \
-    && update-alternatives --install /usr/bin/llc llc /usr/bin/llc-10 100 \
-    && rm /usr/bin/perf \
-    && update-alternatives --install /usr/bin/perf perf /usr/lib/linux-tools/5.4.0-125-generic/perf 100
+    && update-alternatives --install /usr/bin/llc llc /usr/bin/llc-10 100 
+    #&& rm /usr/bin/perf \
+    #&& update-alternatives --install /usr/bin/perf perf /usr/lib/linux-tools/5.4.0-125-generic/perf 100
 
 
 RUN wget https://github.com/sharkdp/hyperfine/releases/download/v1.11.0/hyperfine_1.11.0_amd64.deb \
