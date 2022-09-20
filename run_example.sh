@@ -1,17 +1,21 @@
+sequence_filename='sequences_test.yaml'
+pass_filename='passes_test.yaml'
 benchmarks=('automotive-basicmath-small' 'automotive-bitcount' 'automotive-qsort-large')
+
+python3 src/random_sequences.py config_files/$pass_filename -o $sequence_filename -u -z --max-len 15 -n 10
 
 for b in ${benchmarks[@]}
 do
     echo $b
     #Collect program repersentations
-    python3 src/feature_extractor.py -r histogram benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/hist
-    python3 src/feature_extractor.py -r ir2vec benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/ir2vec
+    python3 src/feature_extractor.py -r histogram benchmarks_train/$b/ -s config_files/$sequence_filename -o ignore/hist
+    python3 src/feature_extractor.py -r ir2vec benchmarks_train/$b/ -s config_files/$sequence_filename -o ignore/ir2vec
     #Collect program speedup 
-    python3 src/speedup_collector.py benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/speedups/
+    python3 src/speedup_collector.py benchmarks_train/$b/ -s config_files/$sequence_filename -o ignore/speedups/
     #collect program runtime
-    python3 src/runtime_collector.py benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/runtime
+    python3 src/runtime_collector.py benchmarks_train/$b/ -s config_files/$sequence_filename -o ignore/runtime
     #collect number of cycles
-    python3 src/cycles_collector.py benchmarks_train/$b/ -s config_files/sequences.yaml -o ignore/cycles
+    python3 src/cycles_collector.py benchmarks_train/$b/ -s config_files/$sequence_filename -o ignore/cycles
 
 done
 
