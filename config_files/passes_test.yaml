@@ -1,0 +1,4 @@
+- -dce
+- -gvn
+- -sroa
+- -loop-unroll

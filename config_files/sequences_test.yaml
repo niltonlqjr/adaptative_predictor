@@ -1,0 +1,114 @@
+S0:
+- -reassociate
+- -gvn
+- -dce
+- -sroa
+- -indvars
+- -lcssa
+- -loop-rotate
+- -unroll-allow-partial
+- -loop-unroll
+- -reassociate
+- -gvn
+- -reassociate
+- -gvn
+S1:
+- -sroa
+- -reassociate
+- -gvn
+S2:
+- -reassociate
+- -gvn
+- -indvars
+- -lcssa
+- -loop-rotate
+- -unroll-allow-partial
+- -loop-unroll
+- -indvars
+- -lcssa
+- -loop-rotate
+- -loop-unroll
+- -sroa
+S3:
+- -indvars
+- -lcssa
+- -loop-rotate
+- -unroll-allow-partial
+- -loop-unroll
+- -sroa
+- -indvars
+- -lcssa
+- -loop-rotate
+- -loop-unroll
+- -sroa
+- -indvars
+- -lcssa
+- -loop-rotate
+- -loop-unroll
+- -dce
+- -sroa
+- -reassociate
+- -gvn
+- -sroa
+S4:
+- -reassociate
+- -gvn
+S5:
+- -reassociate
+- -gvn
+- -indvars
+- -lcssa
+- -loop-rotate
+- -unroll-allow-partial
+- -loop-unroll
+- -dce
+- -sroa
+- -dce
+- -reassociate
+- -gvn
+- -dce
+- -indvars
+- -lcssa
+- -loop-rotate
+- -loop-unroll
+S6:
+- -indvars
+- -lcssa
+- -loop-rotate
+- -unroll-allow-partial
+- -loop-unroll
+S7:
+- -dce
+S8:
+- -dce
+S9:
+- -reassociate
+- -gvn
+- -sroa
+- -reassociate
+- -gvn
+- -sroa
+- -dce
+- -reassociate
+- -gvn
+- -sroa
+- -indvars
+- -lcssa
+- -loop-rotate
+- -unroll-allow-partial
+- -loop-unroll
+- -indvars
+- -lcssa
+- -loop-rotate
+- -loop-unroll
+- -indvars
+- -lcssa
+- -loop-rotate
+- -loop-unroll
+- -sroa
+- -reassociate
+- -gvn
+- -indvars
+- -lcssa
+- -loop-rotate
+- -loop-unroll
