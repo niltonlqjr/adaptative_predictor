@@ -1,5 +1,5 @@
 from gettext import find
-import os
+import os,sys
 
 from regex import B
 from sklearn.metrics import classification_report
@@ -75,9 +75,12 @@ def read_dataset(representation_dir,
         ret_x_baseline[bench_name] = x_baseline_feat
         ret[bench_name] = {}
         for seq in x_data:
-            ret[bench_name][seq] = {}
-            ret[bench_name][seq]['x'] = x_data[seq]
-            ret[bench_name][seq]['y'] = y_data[seq]
+            try:
+                ret[bench_name][seq] = {}
+                ret[bench_name][seq]['x'] = x_data[seq]
+                ret[bench_name][seq]['y'] = y_data[seq]
+            except:
+                sys.stderr.write('fail on load sequence:'+str(seq)+'for benchmark:'+str(bench_name))
     return ret,ret_x_baseline
 
 def label_dataset_to_clusters(dataset,
