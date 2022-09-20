@@ -254,5 +254,6 @@ class SpeedupExtractor(ExecutionGoalExtractor):
         goal_seq = cls.get_execution_goal(bench_dir=bench_dir,
                                           sequence_str=sequence_str,
                                           working_set=working_set)
-        
+        if goal_baseline == float('inf') or goal_seq == float('inf'):
+            return None
         return goal_baseline/goal_seq

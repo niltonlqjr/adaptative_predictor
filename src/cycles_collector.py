@@ -19,9 +19,11 @@ def extract_cycles(benchmark_dir,
     for s_name in sequence_dict:
         sequence_str = Sequence.name_pass_to_string(sequence_dict[s_name])
         print(sequence_str)
-        cycles[s_name] = ExecutionGoalExtractor.get_execution_goal(bench_dir=benchmark_dir,
+        cycles_s_name = ExecutionGoalExtractor.get_execution_goal(bench_dir=benchmark_dir,
                                                                      sequence_str=sequence_str,
                                                                      working_set=working_set)
+        if cycles_s_name != float('inf'):
+            cycles[s_name] = cycles_s_name
     return cycles
 
 def run(args):

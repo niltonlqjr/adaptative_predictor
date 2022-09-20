@@ -23,9 +23,11 @@ def extract_speedup(benchmark_dir,
     for s_name in sequence_dict:
         sequence_str = Sequence.name_pass_to_string(sequence_dict[s_name])
         print(sequence_str)
-        speedups[s_name] = SpeedupExtractor.get_sepeedup(bench_dir=benchmark_dir,
+        speedup_s_name = SpeedupExtractor.get_sepeedup(bench_dir=benchmark_dir,
                                                          sequence_str=sequence_str,
                                                          working_set=working_set)
+        if speedup_s_name != None:
+            speedups[s_name] = speedup_s_name
     return speedups
 
 def run(args):
