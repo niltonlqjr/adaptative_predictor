@@ -80,7 +80,8 @@ def read_dataset(representation_dir,
                 ret[bench_name][seq]['x'] = x_data[seq]
                 ret[bench_name][seq]['y'] = y_data[seq]
             except:
-                sys.stderr.write('fail on load sequence:'+str(seq)+'for benchmark:'+str(bench_name))
+                sys.stderr.write('fail on load sequence:'+str(seq)
+                                 +'for benchmark:'+str(bench_name)+'\n')
     return ret,ret_x_baseline
 
 def label_dataset_to_clusters(dataset,
