@@ -5,4 +5,5 @@ $CONTAINER_CMD run --interactive --tty --rm \
   --env "SHELL=/bin/bash" \
   --workdir $VOLUME_DIR \
   --volume $VOLUME_DIR:$VOLUME_DIR \
+  --user "$(id -u):$(id -g)" \
   $CONTAINER_IMAGE "$@"

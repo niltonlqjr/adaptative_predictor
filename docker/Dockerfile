@@ -2,6 +2,9 @@
 FROM ubuntu:20.04
 # FROM nvidia/cuda:11.2.0-runtime-ubuntu20.04
 
+ARG USER_ID
+ARG GROUP_ID
+
 RUN apt-get update -y && apt-get install -y locales gnupg curl sudo \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
@@ -49,9 +52,14 @@ RUN git clone https://github.com/IITH-Compilers/IR2Vec.git \
     && rm -rf IR2Vec
 
 
-# Creating and switching to a non-root user
-RUN useradd --create-home --gid sudo --shell /bin/bash --system nonroot \
+# Creating and switching to a non-root user and the group 
+RUN addgroup --gid $GROUP_ID nonroot \
+    && adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID nonroot \
+    && usermod -aG sudo nonroot \
     && echo "nonroot ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+#RUN useradd --create-home --gid sudo --shell /bin/bash --system nonroot \
+#    && echo "nonroot ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+
 USER nonroot
 WORKDIR /home/nonroot
 ENV LANG en_US.utf8
