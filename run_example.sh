@@ -8,14 +8,14 @@ for b in ${benchmarks[@]}
 do
     echo $b
     #Collect program repersentations
-    python3 src/feature_extractor.py benchmarks_train/$b/ ${b}_teste -r histogram -s config_files/$sequence_filename -o ignore/hist # > /dev/null
-    python3 src/feature_extractor.py benchmarks_train/$b/ ${b}_teste -r ir2vec -s config_files/$sequence_filename -o ignore/ir2vec # > /dev/null
+    python3 src/feature_extractor.py benchmarks_train/$b/ $b -r histogram -s config_files/$sequence_filename -o ignore/hist # > /dev/null
+    python3 src/feature_extractor.py benchmarks_train/$b/ $b -r ir2vec -s config_files/$sequence_filename -o ignore/ir2vec # > /dev/null
     #Collect program speedup 
-    python3 src/speedup_collector.py benchmarks_train/$b/ ${b}_teste -s config_files/$sequence_filename -o ignore/speedups/ # > /dev/null
+    python3 src/speedup_collector.py benchmarks_train/$b/ $b -s config_files/$sequence_filename -o ignore/speedups/ # > /dev/null
     #collect program runtime
-    python3 src/runtime_collector.py benchmarks_train/$b/ ${b}_teste -s config_files/$sequence_filename -o ignore/runtime # > /dev/null
+    python3 src/runtime_collector.py benchmarks_train/$b/ $b -s config_files/$sequence_filename -o ignore/runtime # > /dev/null
     #collect number of cycles
-    #python3 src/cycles_collector.py benchmarks_train/$b/ ${b}_teste -s config_files/$sequence_filename -o ignore/cycles # > /dev/null
+    #python3 src/cycles_collector.py benchmarks_train/$b/ $b -s config_files/$sequence_filename -o ignore/cycles # > /dev/null
 
 done
 
