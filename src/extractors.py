@@ -28,7 +28,7 @@ class IR2vecExtractor:
         driver = LLVMDriver([])
         builder = compy.LLVMIR2VecBuilder(driver)
         info = builder.ir_to_info(os.path.join(bench_dir,
-                                               'a.out_o.bc'))
+                                               'program_o.bc'))
         repr = info.moduleInfo.ir2vec
         return repr
 
@@ -116,7 +116,7 @@ class HistogramExtractor:
         driver = LLVMDriver([])
         builder = compy.LLVMHistogramBuilder(driver)
         info = builder.ir_to_info(os.path.join(bench_dir,
-                                               'a.out_o.bc'))
+                                               'program_o.bc'))
         repr = cls._program_representation(info.functionInfos)
         return repr
 
