@@ -32,7 +32,7 @@ def run(args):
     output_dir = args.output_dir
     runs = args.runs
     working_set=args.working_set
-
+    bench_name=args.bench_name
     sequence_dict = IO.load_yaml_or_fail(sequences_file)
 
     cycles = extract_cycles(bench_dir,sequence_dict, working_set, runs)
@@ -43,7 +43,7 @@ def run(args):
         outfile=str(s_name)+'_'+Path(bench_dir).stem
         outfile=os.path.join(output_dir,outfile)
         print(s_name,runtimes[s_name])'''
-    bench_name=Path(bench_dir).stem
+    #bench_name=Path(bench_dir).stem
     outfile=os.path.join(output_dir,bench_name)
     outfile+='.yaml'
     data={}
@@ -59,6 +59,8 @@ if __name__ == '__main__':
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('program_dir',
                         help='directory of the program source, compile.sh, execute.sh and makefile.opt (compatible with yacos)')
+    parser.add_argument('bench_name',
+                        help='benchmark name(used as prefix to output files)')
     parser.add_argument('--sequeces-file', '-s', 
                         dest='sequences_file',
                         default='config_files/sequences.yaml',

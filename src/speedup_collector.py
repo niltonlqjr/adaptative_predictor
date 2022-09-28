@@ -37,6 +37,7 @@ def run(args):
     baseline = args.baseline
     runs = args.runs
     working_set=args.working_set
+    bench_name=args.bench_name
 
     sequence_dict = IO.load_yaml_or_fail(sequences_file)
 
@@ -47,7 +48,7 @@ def run(args):
     '''for s_name in speedups:
         outfile=str(s_name)+'_'+Path(bench_dir).stem
         outfile=os.path.join(output_dir,outfile)'''
-    bench_name=Path(bench_dir).stem
+    #bench_name=Path(bench_dir).stem
     outfile=os.path.join(output_dir,bench_name)
     outfile+='.yaml'
     data={}
@@ -63,6 +64,8 @@ if __name__ == '__main__':
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('program_dir',
                         help='directory of the program source, compile.sh, execute.sh and makefile.opt (compatible with yacos)')
+    parser.add_argument('bench_name',
+                        help='benchmark name(used as prefix to output files)')
     parser.add_argument('--sequeces-file', '-s', 
                         dest='sequences_file',
                         default='config_files/sequences.yaml',
@@ -75,7 +78,8 @@ if __name__ == '__main__':
                         dest='baseline',
                         default='-O0',
                         help='Compiler optimization level to use as baseline ')
-    parser.add_argument('--output-dir','-o', dest='output_dir',
+    parser.add_argument('--output-dir','-o',
+                        dest='output_dir',
                         default='representations',
                         help='output directory of repersentation files')
     parser.add_argument('--working-set','-w',
