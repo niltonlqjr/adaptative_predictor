@@ -1,6 +1,4 @@
 Benchmark #1: ./a.out ../data/large/input/input_large.pgm ../data/large/output/output_large.c.pgm -c < /dev/null
-  Time (mean ± σ):      0.006 s ±  0.000 s    [User: 5.0 ms, System: 0.9 ms]
-  Range (min … max):    0.006 s …  0.006 s    3 runs
- 
-  Warning: Statistical outliers were detected. Consider re-running this benchmark on a quiet PC without any interferences from other programs. It might help to use the '--warmup' or '--prepare' options.
+  Time (mean ± σ):      0.007 s ±  0.000 s    [User: 4.9 ms, System: 2.0 ms]
+  Range (min … max):    0.006 s …  0.008 s    5 runs
  

@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 
 from yacos.essential import IO
+from yacos.essential import Sequence
 from sklearn.preprocessing import MinMaxScaler
 
 from extractors import *
@@ -24,6 +25,17 @@ def run(args):
     working_set = args.working_set
     output_file = args.output_file
     number_runs = args.number_runs
+    answer_file = args.answer_file
+    answer_key = args.answer_key
+
+    sequence_file = args.sequence_file
+    if answer_file != None and (answer_key == None or sequence_file==None):
+        sys.stderr.write('You must use an answer key when using an answer file and a sequence file!')
+        exit(0)
+
+    if sequence_file != None:
+        compiled_sequences = IO.load_yaml(sequence_file)
+        sequence = Sequence.name_pass_to_string(compiled_sequences[answer_key])
 
     output = {}
     
@@ -92,25 +104,30 @@ def run(args):
     output['result']['predicted_value'] = float(pred_target[0][0])
 
     if not only_predict:
-        if target == 'speedup':
-            SpeedupExtractor.set_baseline(baseline)
-            real_target = SpeedupExtractor.get_sepeedup(benchmark_dir,
-                                          sequence,
-                                          working_set)
-        elif target == 'cycles':
+        if answer_file == None:
+            if target == 'speedup':
+                SpeedupExtractor.set_baseline(baseline)
+                real_target = SpeedupExtractor.get_sepeedup(benchmark_dir,
+                                            sequence,
+                                            working_set)
+            elif target == 'cycles':
                 ExecutionGoalExtractor.set_goal(['cycles'],['1'])
                 ExecutionGoalExtractor.set_number_runs(number_runs)
                 real_target = ExecutionGoalExtractor.get_execution_goal(
-                                                    benchmark_dir,
-                                                    sequence,
-                                                    working_set)
-        elif target == 'runtime':
-            ExecutionGoalExtractor.set_goal(['runtime'],['1'])
-            ExecutionGoalExtractor.set_number_runs(number_runs)
-            real_target = ExecutionGoalExtractor.get_execution_goal(
-                                                    benchmark_dir,
-                                                    sequence,
-                                                    working_set)
+                                                        benchmark_dir,
+                                                        sequence,
+                                                        working_set)
+            elif target == 'runtime':
+                ExecutionGoalExtractor.set_goal(['runtime'],['1'])
+                ExecutionGoalExtractor.set_number_runs(number_runs)
+                real_target = ExecutionGoalExtractor.get_execution_goal(
+                                                        benchmark_dir,
+                                                        sequence,
+                                                        working_set)
+        else:
+            ans = IO.load_yaml_or_fail(answer_file)
+            real_target = ans['data'][answer_key]
+        
         out_str += f'-> real value:{real_target}'
         output['result']['real_value']=real_target
     IO.dump_yaml(output,output_file)
@@ -120,7 +137,7 @@ def run(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('predict speedup/runtime',
+    parser = argparse.ArgumentParser('predict speedup',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('benchmark_dir',
                         help='directory containing benchmark')
@@ -150,6 +167,21 @@ if __name__ == '__main__':
                         default=1,
                         type=int,
                         help='number of runs to collect real value (only used when only predict is disabled)')
+    parser.add_argument('--answer-file','-a',
+                        dest='answer_file',
+                        default=None,
+                        help='yaml file that contain the real speedup for the program (created by' 
+                              + 'speedup_collector.py)\nIf not used, the program will be executed')
+    parser.add_argument('--answer-key','-k',
+                        dest='answer_key',
+                        default=None,
+                        help='key used for the answer (this argumment is used only with --answer-file\n'+
+                        'if this argument is used, the --sequence argumment is ignored.)')
+    parser.add_argument('--sequence-file','-sf',
+                        dest='sequence_file',
+                        default=None,
+                        help='file containing sequeces passes of answer file')
+
     args=parser.parse_args()
     
     run(args)

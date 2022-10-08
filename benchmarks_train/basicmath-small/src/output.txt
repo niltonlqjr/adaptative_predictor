@@ -98664,6 +98664,6 @@ sqrt(3FED0169) = 7FED0000
 6.248278722140 radians = 358 degrees
 6.265732014660 radians = 359 degrees
 6.283185307180 radians = 360 degrees
-  Time (mean ± σ):      0.018 s ±  0.001 s    [User: 16.5 ms, System: 1.4 ms]
-  Range (min … max):    0.016 s …  0.019 s    5 runs
+  Time (mean ± σ):      0.014 s ±  0.004 s    [User: 12.5 ms, System: 1.7 ms]
+  Range (min … max):    0.010 s …  0.019 s    5 runs
  
